@@ -141,7 +141,11 @@
                 RUN_CMD=("$SHELL_RESOLVED")
               fi
 
-              echo "$BWRAP" "''${args[@]}" "''${RUN_CMD[@]}"
+              : "''${VERBOSE:=}"
+              if [[ $VERBOSE = "1" ]]; then
+                echo "$BWRAP" "''${args[@]}" "''${RUN_CMD[@]}"
+              fi
+
               "$BWRAP" "''${args[@]}" "''${RUN_CMD[@]}"
             '';
           in
