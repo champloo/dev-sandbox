@@ -23,7 +23,6 @@
             extraEnv ? { },
           }:
           let
-
             script = ''
               BWRAP="${pkgs.bubblewrap}/bin/bwrap"
               CACERT="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
@@ -91,12 +90,10 @@
               maybe_bind /etc/static/nix
               maybe_ro_bind /run/current-system/sw
 
-              ${pkgs.lib.concatStringsSep "\n" (map (a: ''args+=( ${pkgs.lib.escapeShellArg a} )'') extraArgs)}
+              ${pkgs.lib.concatStringsSep "\n" (map (a: ''args+=( ${a} )'') extraArgs)}
 
               ${pkgs.lib.concatStringsSep "\n" (
-                pkgs.lib.mapAttrsToList (
-                  n: v: ''args+=( --setenv ${pkgs.lib.escapeShellArg n} ${pkgs.lib.escapeShellArg v} )''
-                ) extraEnv
+                pkgs.lib.mapAttrsToList (n: v: ''args+=( --setenv "${pkgs.lib.escapeShellArg n}" ${v} )'') extraEnv
               )}
 
               RUN_CMD=(${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg runCommand)})
