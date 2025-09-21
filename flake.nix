@@ -1,5 +1,5 @@
 {
-  description = "Developer sandbox offers lightweight environment isolation for use with AI code assistants";
+  description = "Developer sandbox offers a lightweight isolated environment. Helpful for AI assisted coding";
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
   };
@@ -15,17 +15,20 @@
       let
         pkgs = import nixpkgs { inherit system; };
 
-        # ---- install-time options (override via .override { ... })
-        extraEnv = { }; # e.g. { DEV_SANDBOX_CMD = "claude --dangerously-skip-permissions"; }
+        runCommand = [
+        ];
+
+        extraArgs = [
+        ];
+
+        extraEnv = {
+        };
 
         script = ''
           BWRAP="${pkgs.bubblewrap}/bin/bwrap"
           CACERT="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
 
-          # inject extra env baked at build time
-          ${pkgs.lib.concatStringsSep "\n" (
-            pkgs.lib.mapAttrsToList (n: v: "export " + n + "=" + pkgs.lib.escapeShellArg v) extraEnv
-          )}
+          SHELL_RESOLVED="$(readlink "$(command -v "$SHELL")")"
 
           USER="$(whoami)"
           SANDBOX_HOME="/tmp/dev-sandbox-home-$$"
@@ -35,6 +38,20 @@
           trap 'rm -rf "$SANDBOX_HOME" "$SANDBOX_TMP"' EXIT
 
           mkdir -p "$SANDBOX_TMP" "$SANDBOX_HOME" "$SANDBOX_HOME/.cache" "$SANDBOX_HOME/.config"
+
+          maybe_bind() {
+            if [[ -e "$1" ]]; then
+              args+=( --bind "$1" "''${2:-$1}" )
+            fi
+            return 0
+          }
+
+          maybe_ro_bind() {
+            if [[ -e "$1" ]]; then
+              args+=( --ro-bind "$1" "''${2:-$1}" )
+            fi
+            return 0
+          }
 
           # Build bwrap argument list
           args=(
@@ -49,7 +66,7 @@
             --dev /dev                            # minimal /dev
             --tmpfs /usr
             --dir /usr/bin
-            --setenv "SHELL" "$(readlink "$(command -v "$SHELL")")"
+            --setenv "SHELL" "$SHELL_RESOLVED"
             --setenv "DEV_SANDBOX" "enabled"      # allows us to know when we are inside the sandbox in case other scripts need to be aware of it
             --setenv "SSL_CERT_FILE" "$CACERT"
             --setenv "NIX_SSL_CERT_FILE" "$CACERT"
@@ -64,30 +81,31 @@
             --bind "$SANDBOX_TMP" /tmp
             --bind "$PWD" "$PWD"
             --bind /etc/resolv.conf /etc/resolv.conf
-            --bind /etc/nix /etc/nix
-            --bind /etc/static/nix /etc/static/nix
-            --ro-bind /run/current-system/sw /run/current-system/sw
             --ro-bind /bin/sh /bin/sh
             --ro-bind /usr/bin/env /usr/bin/env
             --ro-bind /nix /nix
           )
 
-          : "''${DEV_SANDBOX_EXTRA_ARGS:=}"
-          # Allow users to pass extra bwrap args via a simple string
-          if [[ -n "''${DEV_SANDBOX_EXTRA_ARGS:-}" ]]; then
-            # Split on IFS into an array (no arrays in env)
-            read -r -a _extra <<< "$DEV_SANDBOX_EXTRA_ARGS"
-            args+=( "''${_extra[@]}" )
+          # These binds may not be available on non nixos systems
+          maybe_bind /etc/nix
+          maybe_bind /etc/static/nix
+          maybe_ro_bind /run/current-system/sw
+
+          ${pkgs.lib.concatStringsSep "\n" (map (a: ''args+=( ${pkgs.lib.escapeShellArg a} )'') extraArgs)}
+
+          ${pkgs.lib.concatStringsSep "\n" (
+            pkgs.lib.mapAttrsToList (
+              n: v: ''args+=( --setenv ${pkgs.lib.escapeShellArg n} ${pkgs.lib.escapeShellArg v} )''
+            ) extraEnv
+          )}
+
+          RUN_CMD=(${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg runCommand)})
+          if [[ ''${#RUN_CMD[@]} -eq 0 ]]; then
+            RUN_CMD=("$SHELL_RESOLVED")
           fi
 
-          : "''${DEV_SANDBOX_CMD:=}"
-          if [[ -n "''${DEV_SANDBOX_CMD:-}" ]]; then
-            echo "$BWRAP" "''${args[@]}" "$DEV_SANDBOX_CMD"
-            "$BWRAP" "''${args[@]}" "$DEV_SANDBOX_CMD"
-          else
-            echo "$BWRAP" "''${args[@]}" "$(readlink "$(command -v "$SHELL")")"
-            "$BWRAP" "''${args[@]}" "$(readlink "$(command -v "$SHELL")")"
-          fi
+          echo "$BWRAP" "''${args[@]}" "''${RUN_CMD[@]}"
+          "$BWRAP" "''${args[@]}" "''${RUN_CMD[@]}"
         '';
 
         app = pkgs.writeShellApplication {
@@ -98,6 +116,12 @@
             cacert
           ];
           text = script;
+          meta = {
+            description = "Developer sandbox offers a lightweight isolated environment. Helpful for AI assisted coding";
+            mainProgram = "dev-sandbox";
+            platforms = pkgs.lib.platforms.linux;
+            license = pkgs.lib.licenses.mit;
+          };
         };
       in
       {
