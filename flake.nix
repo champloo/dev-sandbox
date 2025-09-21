@@ -16,11 +16,27 @@
         pkgs = import nixpkgs { inherit system; };
         lib = pkgs.lib;
 
+        # Normalize an entry to { src, dst }
+        normalizeToSrcDst =
+          p:
+          if builtins.isList p && builtins.length p == 2 then
+            {
+              src = builtins.elemAt p 0;
+              dst = builtins.elemAt p 1;
+            }
+          else
+            {
+              src = p;
+              dst = p;
+            };
+
         mkDevSandbox = lib.makeOverridable (
           {
             runCommand ? [ ],
+            binds ? [ ],
+            roBinds ? [ ],
             extraArgs ? [ ],
-            extraEnv ? { },
+            envs ? { },
           }:
           let
             script = ''
@@ -41,6 +57,8 @@
               maybe_bind() {
                 if [[ -e "$1" ]]; then
                   args+=( --bind "$1" "''${2:-$1}" )
+                else
+                  echo "Warning: Will not bind $1 as it does not exist."
                 fi
                 return 0
               }
@@ -48,6 +66,8 @@
               maybe_ro_bind() {
                 if [[ -e "$1" ]]; then
                   args+=( --ro-bind "$1" "''${2:-$1}" )
+                else
+                  echo "Warning: Will not ro-bind $1 as it does not exist."
                 fi
                 return 0
               }
@@ -90,10 +110,30 @@
               maybe_bind /etc/static/nix
               maybe_ro_bind /run/current-system/sw
 
+              ${pkgs.lib.concatStringsSep "\n" (
+                map (
+                  p:
+                  let
+                    b = normalizeToSrcDst p;
+                  in
+                  ''maybe_ro_bind "${b.src}" "${b.dst}"''
+                ) roBinds
+              )}
+
+              ${pkgs.lib.concatStringsSep "\n" (
+                map (
+                  p:
+                  let
+                    b = normalizeToSrcDst p;
+                  in
+                  ''maybe_bind "${b.src}" "${b.dst}"''
+                ) binds
+              )}
+
               ${pkgs.lib.concatStringsSep "\n" (map (a: ''args+=( ${a} )'') extraArgs)}
 
               ${pkgs.lib.concatStringsSep "\n" (
-                pkgs.lib.mapAttrsToList (n: v: ''args+=( --setenv "${pkgs.lib.escapeShellArg n}" ${v} )'') extraEnv
+                pkgs.lib.mapAttrsToList (n: v: ''args+=( --setenv "${n}" "${v}" )'') envs
               )}
 
               RUN_CMD=(${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg runCommand)})
