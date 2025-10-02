@@ -78,3 +78,9 @@ claude-code
 * PATH, HOME, USER, LOGNAME, TERM environment variables
 * Certs env is set to the flake’s `cacert` bundle for reliable TLS.
 
+## Similar projects
+
+* <https://github.com/numtide/nix-ai-tools/blob/main/packages/claudebox/claudebox.sh>
+* <https://github.com/longregen/claude-sandbox>
+* <https://github.com/Naxdy/nix-bwrapper>
+* <https://github.com/fgaz/nix-bubblewrap>
