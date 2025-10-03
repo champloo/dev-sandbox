@@ -1,43 +1,41 @@
 # dev-sandbox
 
 **Developer sandbox** offers a lightweight isolated environment using [Bubblewrap](https://github.com/containers/bubblewrap).
-It’s designed to keep your host tidy while you (or AI coding assistants) run tools inside a minimal, network-enabled container.
-
----
+It’s designed to keep your host data isolated while you (or AI coding assistants) run tools inside a minimal, network-enabled container.
 
 ## Features
 
 - 🛡️ Isolation via `bwrap`
 - 📦 Packaged as a Nix flake
-- 🔧 **Build-time** configuration:
+- 🔧 Build-time configuration:
   - `runCommand` — command to run inside the sandbox. Defaults to your current shell.
-  - `binds` — list of directories to `--bind`. Can either be a string path where the same path is bound inside the sandbox or a two-element list [ src dst ].
-  - `roBinds` — list of directories to `--ro-bind`
-  - `envs` — key/value pairs injected as `--setenv KEY VALUE` on the `bwrap` cmdline.
-  - `extraArgs` — extra `bwrap` flags/argv to append.
+  - `binds` — list of paths to expose. Equivalent to  `bwrap --bind`. Can either be a string path where the same path is bound inside the sandbox or a two-element list [ src dst ].
+  - `roBinds` — list of paths to expose as read only. Equivalent to  `bwrap --ro-bind`.
+  - `envs` — key/value pairs. Equivalent to `brwap --setenv KEY VALUE`.
+  - `extraArgs` — extra `bwrap` flags to append.
 - Sets DEV_SANDOX env var to allow you to detect when sandbox is active.
-  - For example you can use this to change your prompt to indicate when you are in the sandbox 
+  - For example, you can use this to change your prompt to indicate when you are in the sandbox.
 
 ## Requirements
 
-- 🐧 Linux only (`x86_64-linux`, `aarch64-linux`). Works on NixOS. Should work on other Linux distros with Nix, but not tested.
-
----
-
-## Install / Run
-
-Run directly (flake-enabled Nix):
-```bash
-nix run github:champloo/dev-sandbox
-````
-
----
+- [Nix](https://nix.dev/) package manager with [flakes](https://nix.dev/concepts/flakes.html#flakes) enabled.
+- 🐧 Linux (`x86_64-linux`, `aarch64-linux`). Tested on NixOS. Should work on other Linux distros, but not tested.
 
 ## Usage
 
-### Example: use from `devenv.nix`
+### From [devenv](https://devenv.sh/)
+
+```yaml
+# devenv.yaml
+
+inputs:
+  dev-sandbox:
+    url: github:champloo/dev-sandbox
+```
 
 ```nix
+# devenv.nix
+
 { pkgs, inputs, ... }:
 
 let
@@ -62,21 +60,25 @@ in {
 }
 ```
 
-Usage:
+From your shell you can then...
 
 ```bash
 devenv shell
 claude-code
 ```
+### Running directly from shell
 
----
+If you just want to try it out with the default config you can...
 
-## What gets mounted
+```bash
+nix run github:champloo/dev-sandbox
+````
+## What gets mounted by default
 
-* Read/write: your project directory (`$PWD`), per-invocation tmp (`/tmp`), and a synthetic home at `/home/$USER`.
-* Read-only: `/nix`, `/bin/sh`, `/usr/bin/env`, and (on NixOS) `/run/current-system/sw` (only if present).
-* PATH, HOME, USER, LOGNAME, TERM environment variables
-* Certs env is set to the flake’s `cacert` bundle for reliable TLS.
+* Read/write: the current directory, synthetic home and tmp at `/tmp/dev-sandbox-home-$$` and `/tmp/dev-sandbox-tmp-$$`, `/etc/resolv.conf`, `/etc/nix`, `/etc/static/nix`.
+* Read-only: `/nix`, `/bin/sh`, `/usr/bin/env`, and on NixOS systems `/run/current-system/sw`.
+* `PATH`, `HOME`, `USER`, `LOGNAME`, `TERM` environment variables.
+  * `cacert` is installed as a dependency and the relevant cert env vars are pointed to the installed `ca-bundle.crt` file.
 
 ## Similar projects
 
