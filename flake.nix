@@ -37,6 +37,7 @@
             roBinds ? [ ],
             extraArgs ? [ ],
             envs ? { },
+            extraRuntimeInputs ? [ ],
           }:
           let
             script = ''
@@ -151,11 +152,14 @@
           in
           pkgs.writeShellApplication {
             name = "dev-sandbox";
-            runtimeInputs = with pkgs; [
-              bubblewrap
-              bash
-              cacert
-            ];
+            runtimeInputs =
+              with pkgs;
+              [
+                bubblewrap
+                bash
+                cacert
+              ]
+              ++ extraRuntimeInputs;
             text = script;
             meta = {
               description = "Developer sandbox offers a lightweight isolated environment. Helpful for AI assisted coding";
@@ -165,11 +169,31 @@
             };
           }
         );
+
         devSandbox = mkDevSandbox { };
+
+        claudeSandbox = mkDevSandbox {
+          extraRuntimeInputs = [ pkgs.claude-code ];
+          binds = [
+            "$HOME/.claude.json"
+            "$HOME/.claude"
+          ];
+
+          runCommand = [
+            "claude"
+            "--dangerously-skip-permissions"
+          ];
+        };
       in
       {
         packages.dev-sandbox = devSandbox;
         packages.default = devSandbox;
+        packages.dev-sandbox-claude = claudeSandbox;
+
+        apps.claude = {
+          type = "app";
+          program = "${claudeSandbox}/bin/dev-sandbox";
+        };
 
         apps.default = {
           type = "app";
