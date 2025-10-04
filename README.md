@@ -23,6 +23,61 @@ It’s designed to keep your host data isolated while you (or AI coding assistan
 
 ## Usage
 
+### As a NixOS Module
+
+Add to your `flake.nix` inputs:
+
+```nix
+{
+  inputs.dev-sandbox.url = "github:champloo/dev-sandbox";
+}
+```
+
+Then in your `configuration.nix`:
+
+```nix
+{ inputs, pkgs, ... }:
+
+{
+  imports = [ inputs.dev-sandbox.nixosModules.default ];
+
+  programs.dev-sandbox = {
+    # Common settings applied to ALL sandbox instances
+    binds = [
+      "$HOME/.config/common"
+      "$HOME/.local/share"
+    ];
+    roBinds = [
+      "$HOME/.bashrc"
+      "$HOME/.zshrc"
+    ];
+    envs = {
+      EDITOR = "vim";
+    };
+
+    # Default sandbox instance
+    default = {
+      enable = true;
+      # Inherits common settings above
+    };
+
+    # Claude Code sandbox instance (has smart defaults!)
+    claude = {
+      enable = true;
+      # Defaults are pre-configured:
+      #   runCommand = [ "claude" "--dangerously-skip-permissions" ]
+      #   binds = [ "$HOME/.claude.json" "$HOME/.claude" ]
+      #   extraRuntimeInputs = [ pkgs.claude-code ]
+      #
+      # You can override or extend any defaults:
+      # binds = [ "$HOME/.custom-claude-config" ];
+    };
+  };
+}
+```
+
+This creates `dev-sandbox` and `dev-sandbox-claude` packages in your system.
+
 ### From [devenv](https://devenv.sh/)
 
 ```yaml
