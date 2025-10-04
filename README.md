@@ -7,6 +7,7 @@ It’s designed to keep your host data isolated while you (or AI coding assistan
 
 - 🛡️ Isolation via `bwrap`
 - 📦 Packaged as a Nix flake
+- 🛒 Provides convenient shell and claude sandboxes
 - 🔧 Build-time configuration:
   - `runCommand` — command to run inside the sandbox. Defaults to your current shell.
   - `binds` — list of paths to expose. Equivalent to  `bwrap --bind`. Can either be a string path where the same path is bound inside the sandbox or a two-element list [ src dst ].
@@ -30,6 +31,11 @@ Add to your `flake.nix` inputs:
 ```nix
 {
   inputs.dev-sandbox.url = "github:champloo/dev-sandbox";
+  inputs.dev-sandbox.inputs.nixpkgs.follows = "nixpkgs";
+
+  # And add to your modules
+
+      modules = [ inputs.dev-sandbox.nixosModules.default ];
 }
 ```
 
@@ -39,29 +45,25 @@ Then in your `configuration.nix`:
 { inputs, pkgs, ... }:
 
 {
-  imports = [ inputs.dev-sandbox.nixosModules.default ];
-
   programs.dev-sandbox = {
-    # Common settings applied to ALL sandbox instances
+    # Common settings applied to all sandbox variants
     binds = [
-      "$HOME/.config/common"
-      "$HOME/.local/share"
+      "$HOME/.cache/uv"
     ];
     roBinds = [
-      "$HOME/.bashrc"
       "$HOME/.zshrc"
     ];
     envs = {
-      EDITOR = "vim";
+      EDITOR = "nano";
     };
 
-    # Default sandbox instance
+    # Enable shell sandbox which can be run with dev-sandbox
     default = {
       enable = true;
       # Inherits common settings above
     };
 
-    # Claude Code sandbox instance (has smart defaults!)
+    # Enable Claude Code sandbox which can be run with dev-sandbox-claude
     claude = {
       enable = true;
       # Defaults are pre-configured:
@@ -71,7 +73,7 @@ Then in your `configuration.nix`:
       #   extraRuntimeInputs = [ pkgs.claude-code ]
       #
       # You can override or extend any defaults:
-      # name = "my-custom-name";
+      # name = "claudebox"; # also changes name of the binary
       # binds = [ "$HOME/.custom-claude-config" ];
     };
   };
@@ -84,56 +86,18 @@ This creates two executables:
 
 Both will be available in your system PATH.
 
-### From [devenv](https://devenv.sh/)
-
-```yaml
-# devenv.yaml
-
-inputs:
-  dev-sandbox:
-    url: github:champloo/dev-sandbox
-```
-
-```nix
-# devenv.nix
-
-{ pkgs, inputs, ... }:
-
-let
-  dev-sandbox = inputs.dev-sandbox.packages.${pkgs.system}.dev-sandbox;
-
-  claudeCode = dev-sandbox.override {
-    runCommand = [ "claude" "--dangerously-skip-permissions" ];
-    envs = {
-      EDITOR = "nano";
-    };
-    binds = [
-      "$HOME/.claude.json"
-      "$HOME/.claude"
-      ["$HOME/.histfile" "$HOME/my_history"]
-    ];
-    roBinds = [
-      "$HOME/.zshrc"
-    ];
-  };
-in {
-  scripts.claude-code.exec = ''${claudeCode}/bin/dev-sandbox'';
-}
-```
-
-From your shell you can then...
-
-```bash
-devenv shell
-claude-code
-```
 ### Running directly from shell
 
 If you just want to try it out with the default config you can...
 
 ```bash
 nix run github:champloo/dev-sandbox
-````
+```
+Or to run claude you'll need to unable unfree packages...
+
+```bash
+NIXPKGS_ALLOW_UNFREE=1 nix run github:champloo/dev-sandbox#claude --impure
+```
 ## What gets mounted by default
 
 * Read/write: the current directory, synthetic home and tmp at `/tmp/dev-sandbox-home-$$` and `/tmp/dev-sandbox-tmp-$$`, `/etc/resolv.conf`, `/etc/nix`, `/etc/static/nix`.
