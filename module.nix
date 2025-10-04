@@ -13,6 +13,7 @@ let
 
   # Helper to merge common and instance-specific options
   mergeInstanceConfig = instanceCfg: {
+    name = instanceCfg.name;
     binds = cfg.binds ++ instanceCfg.binds;
     roBinds = cfg.roBinds ++ instanceCfg.roBinds;
     envs = cfg.envs // instanceCfg.envs;
@@ -28,6 +29,13 @@ let
       type = lib.types.submodule {
         options = {
           enable = lib.mkEnableOption "this dev-sandbox instance";
+
+          name = lib.mkOption {
+            type = lib.types.str;
+            default = variantDefaults.name;
+            description = "Name of the executable binary";
+            example = "dev-sandbox-custom";
+          };
 
           binds = lib.mkOption {
             type = lib.types.listOf (lib.types.either lib.types.str (lib.types.listOf lib.types.str));
@@ -95,12 +103,10 @@ let
     instanceName: instanceCfg:
     let
       mergedConfig = mergeInstanceConfig instanceCfg;
-      # Create unique binary names: "dev-sandbox" for default, "dev-sandbox-<name>" for others
-      binaryName = if instanceName == "default" then "dev-sandbox" else "dev-sandbox-${instanceName}";
     in
     pkgs.callPackage ./default.nix {
-      name = binaryName;
       inherit (mergedConfig)
+        name
         binds
         roBinds
         envs

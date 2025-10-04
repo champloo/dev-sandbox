@@ -3,6 +3,7 @@
 {
   # Default variant - generic sandbox with no preset config
   default = {
+    name = "dev-sandbox";
     runCommand = [ ];
     binds = [ ];
     roBinds = [ ];
@@ -13,6 +14,7 @@
 
   # Claude Code variant - preconfigured for Claude Code usage
   claude = {
+    name = "dev-sandbox-claude";
     runCommand = [
       "claude"
       "--dangerously-skip-permissions"

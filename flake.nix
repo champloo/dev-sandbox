@@ -56,7 +56,7 @@
         # Create packages using variant defaults
         devSandbox = mkDevSandbox variants.default;
 
-        claudeSandbox = mkDevSandbox (variants.claude // { name = "dev-sandbox-claude"; });
+        claudeSandbox = mkDevSandbox variants.claude;
       in
       {
         packages.dev-sandbox = devSandbox;
@@ -65,12 +65,12 @@
 
         apps.claude = {
           type = "app";
-          program = "${claudeSandbox}/bin/dev-sandbox";
+          program = lib.getExe claudeSandbox;
         };
 
         apps.default = {
           type = "app";
-          program = "${devSandbox}/bin/dev-sandbox";
+          program = lib.getExe devSandbox;
         };
       }
     );

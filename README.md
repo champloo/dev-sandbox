@@ -65,11 +65,13 @@ Then in your `configuration.nix`:
     claude = {
       enable = true;
       # Defaults are pre-configured:
+      #   name = "dev-sandbox-claude"
       #   runCommand = [ "claude" "--dangerously-skip-permissions" ]
       #   binds = [ "$HOME/.claude.json" "$HOME/.claude" ]
       #   extraRuntimeInputs = [ pkgs.claude-code ]
       #
       # You can override or extend any defaults:
+      # name = "my-custom-name";
       # binds = [ "$HOME/.custom-claude-config" ];
     };
   };
