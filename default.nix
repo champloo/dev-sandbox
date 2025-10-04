@@ -1,6 +1,7 @@
 {
   pkgs,
   lib ? pkgs.lib,
+  name ? "dev-sandbox",
   runCommand ? [ ],
   binds ? [ ],
   roBinds ? [ ],
@@ -135,7 +136,7 @@ let
   '';
 in
 pkgs.writeShellApplication {
-  name = "dev-sandbox";
+  name = name;
   runtimeInputs =
     with pkgs;
     [
@@ -147,7 +148,7 @@ pkgs.writeShellApplication {
   text = script;
   meta = {
     description = "Developer sandbox offers a lightweight isolated environment. Helpful for AI assisted coding";
-    mainProgram = "dev-sandbox";
+    mainProgram = name;
     platforms = pkgs.lib.platforms.linux;
     license = pkgs.lib.licenses.mit;
   };

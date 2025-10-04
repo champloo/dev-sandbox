@@ -76,7 +76,11 @@ Then in your `configuration.nix`:
 }
 ```
 
-This creates `dev-sandbox` and `dev-sandbox-claude` packages in your system.
+This creates two executables:
+- `dev-sandbox` - plain shell sandbox
+- `dev-sandbox-claude` - Claude Code sandbox
+
+Both will be available in your system PATH.
 
 ### From [devenv](https://devenv.sh/)
 

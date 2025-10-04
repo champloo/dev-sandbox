@@ -32,6 +32,7 @@
         # Simple wrapper around default.nix with makeOverridable
         mkDevSandbox = lib.makeOverridable (
           {
+            name ? "dev-sandbox",
             runCommand ? [ ],
             binds ? [ ],
             roBinds ? [ ],
@@ -41,6 +42,7 @@
           }:
           pkgs.callPackage ./default.nix {
             inherit
+              name
               runCommand
               binds
               roBinds
@@ -54,7 +56,7 @@
         # Create packages using variant defaults
         devSandbox = mkDevSandbox variants.default;
 
-        claudeSandbox = mkDevSandbox variants.claude;
+        claudeSandbox = mkDevSandbox (variants.claude // { name = "dev-sandbox-claude"; });
       in
       {
         packages.dev-sandbox = devSandbox;

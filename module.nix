@@ -92,11 +92,14 @@ let
     };
 
   mkSandboxPackage =
-    name: instanceCfg:
+    instanceName: instanceCfg:
     let
       mergedConfig = mergeInstanceConfig instanceCfg;
+      # Create unique binary names: "dev-sandbox" for default, "dev-sandbox-<name>" for others
+      binaryName = if instanceName == "default" then "dev-sandbox" else "dev-sandbox-${instanceName}";
     in
     pkgs.callPackage ./default.nix {
+      name = binaryName;
       inherit (mergedConfig)
         binds
         roBinds
