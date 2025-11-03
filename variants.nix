@@ -26,6 +26,6 @@
     roBinds = [ ];
     envs = { };
     extraArgs = [ ];
-    extraRuntimeInputs = [ pkgs.claude-code ];
+    extraRuntimeInputs = [ ];
   };
 }
