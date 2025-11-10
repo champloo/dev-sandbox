@@ -127,6 +127,11 @@ let
       RUN_CMD=("$SHELL_RESOLVED")
     fi
 
+    # Append command-line arguments if provided
+    if [[ $# -gt 0 ]]; then
+      RUN_CMD+=("$@")
+    fi
+
     : "''${VERBOSE:=}"
     if [[ $VERBOSE = "1" ]]; then
       echo "$BWRAP" "''${args[@]}" "''${RUN_CMD[@]}"
