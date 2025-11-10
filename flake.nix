@@ -57,15 +57,23 @@
         devSandbox = mkDevSandbox variants.default;
 
         claudeSandbox = mkDevSandbox variants.claude;
+
+        codexSandbox = mkDevSandbox variants.codex;
       in
       {
         packages.dev-sandbox = devSandbox;
         packages.default = devSandbox;
         packages.dev-sandbox-claude = claudeSandbox;
+        packages.dev-sandbox-codex = codexSandbox;
 
         apps.claude = {
           type = "app";
           program = lib.getExe claudeSandbox;
+        };
+
+        apps.codex = {
+          type = "app";
+          program = lib.getExe codexSandbox;
         };
 
         apps.default = {

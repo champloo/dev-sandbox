@@ -28,4 +28,23 @@
     extraArgs = [ ];
     extraRuntimeInputs = [ ];
   };
+
+  # Codex variant - preconfigured for Codex usage
+  codex = {
+    name = "dev-sandbox-codex";
+    runCommand = [
+      "codex"
+      "-a"
+      "never"
+      "-s"
+      "danger-full-access"
+    ];
+    binds = [
+      "$HOME/.codex"
+    ];
+    roBinds = [ ];
+    envs = { };
+    extraArgs = [ ];
+    extraRuntimeInputs = [ ];
+  };
 }

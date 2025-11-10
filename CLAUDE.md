@@ -41,6 +41,9 @@ nix run
 # Run the Claude Code variant
 nix run .#claude
 
+# Run the Codex variant
+nix run .#codex
+
 # Test with verbose output
 VERBOSE=1 nix run
 
@@ -57,7 +60,7 @@ nix eval .#nixosModules.default
 
 **Variant Defaults** (`variants.nix`):
 - Defines default configurations for different sandbox types
-- Currently has `default` (empty) and `claude` (preconfigured) variants
+- Currently has `default` (empty), `claude` (preconfigured), and `codex` (preconfigured) variants
 - Shared by both module and flake to avoid duplication
 
 **NixOS Module** (`module.nix`):
@@ -68,7 +71,7 @@ nix eval .#nixosModules.default
 
 **Flake Entry** (`flake.nix`):
 - Exports `nixosModules.dev-sandbox` and `nixosModules.default`
-- Defines two pre-built package variants using `variants.nix` defaults
+- Defines three pre-built package variants using `variants.nix` defaults
 - Uses `lib.makeOverridable` to allow runtime customization
 
 ## Configuration Options
@@ -109,7 +112,7 @@ When making changes:
 1. Verify the generated script syntax is valid bash
 2. Test that bwrap arguments are correctly formatted
 3. Ensure bind paths are properly normalized (string vs array handling)
-4. Check both default and Claude variants work
+4. Check default, Claude, and Codex variants work
 5. Validate on both x86_64-linux and aarch64-linux if possible
 
 ## Nix Patterns Used
@@ -161,6 +164,7 @@ The module provides a declarative interface with:
 **Current instances**:
 - `default` - Generic sandbox
 - `claude` - Claude Code-specific sandbox
+- `codex` - Codex-specific sandbox
 
 **Merging behavior**:
 ```nix

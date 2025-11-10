@@ -7,7 +7,7 @@ It’s designed to keep your host data isolated while you (or AI coding assistan
 
 - 🛡️ Isolation via `bwrap`
 - 📦 Packaged as a Nix flake
-- 🛒 Provides convenient shell and claude sandboxes
+- 🛒 Provides convenient shell, claude, and codex sandboxes
 - 🔧 Build-time configuration:
   - `runCommand` — command to run inside the sandbox. Defaults to your current shell.
   - `binds` — list of paths to expose. Equivalent to  `bwrap --bind`. Can either be a string path where the same path is bound inside the sandbox or a two-element list [ src dst ].
@@ -76,15 +76,28 @@ Then in your `configuration.nix`:
       # name = "claudebox"; # also changes name of the binary
       # binds = [ "$HOME/.custom-claude-config" ];
     };
+
+    # Enable Codex sandbox which can be run with dev-sandbox-codex
+    codex = {
+      enable = true;
+      # Defaults are pre-configured:
+      #   name = "dev-sandbox-codex"
+      #   runCommand = [ "codex" "-a" "never" "-s" "danger-full-access" ]
+      #   binds = [ "$HOME/.codex" ]
+      #
+      # You can override or extend any defaults:
+      # binds = [ "$HOME/.custom-codex-config" ];
+    };
   };
 }
 ```
 
-This creates two executables:
+This creates three executables:
 - `dev-sandbox` - plain shell sandbox
 - `dev-sandbox-claude` - Claude Code sandbox
+- `dev-sandbox-codex` - Codex sandbox
 
-Both will be available in your system PATH.
+All will be available in your system PATH.
 
 ### Running directly from shell
 
@@ -93,10 +106,17 @@ If you just want to try it out with the default config you can...
 ```bash
 nix run github:champloo/dev-sandbox
 ```
-Or to run claude you'll need to unable unfree packages...
+
+Run the Claude Code variant:
 
 ```bash
 NIXPKGS_ALLOW_UNFREE=1 nix run github:champloo/dev-sandbox#claude --impure
+```
+
+Run the Codex variant:
+
+```bash
+nix run github:champloo/dev-sandbox#codex
 ```
 ## What gets mounted by default
 

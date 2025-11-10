@@ -117,7 +117,7 @@ let
     };
 
   enabledInstances = lib.filterAttrs (name: cfg: cfg.enable) {
-    inherit (cfg) default claude;
+    inherit (cfg) default claude codex;
   };
 
   sandboxPackages = lib.mapAttrsToList mkSandboxPackage enabledInstances;
@@ -173,6 +173,8 @@ in
     default = mkInstanceOptions variants.default;
 
     claude = mkInstanceOptions variants.claude;
+
+    codex = mkInstanceOptions variants.codex;
   };
 
   config = lib.mkIf (enabledInstances != { }) {
