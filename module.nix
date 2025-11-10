@@ -26,6 +26,7 @@ let
   mkInstanceOptions =
     variantDefaults:
     lib.mkOption {
+      default = {};
       type = lib.types.submodule {
         options = {
           enable = lib.mkEnableOption "this dev-sandbox instance";
