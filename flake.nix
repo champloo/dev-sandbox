@@ -36,6 +36,7 @@
             runCommand ? [ ],
             binds ? [ ],
             roBinds ? [ ],
+            symlinks ? { },
             extraArgs ? [ ],
             envs ? { },
             extraRuntimeInputs ? [ ],
@@ -46,6 +47,7 @@
               runCommand
               binds
               roBinds
+              symlinks
               extraArgs
               envs
               extraRuntimeInputs

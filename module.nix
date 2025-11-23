@@ -16,6 +16,7 @@ let
     name = instanceCfg.name;
     binds = cfg.binds ++ instanceCfg.binds;
     roBinds = cfg.roBinds ++ instanceCfg.roBinds;
+    symlinks = cfg.symlinks // instanceCfg.symlinks;
     envs = cfg.envs // instanceCfg.envs;
     extraArgs = cfg.extraArgs ++ instanceCfg.extraArgs;
     runCommand = instanceCfg.runCommand;
@@ -56,6 +57,15 @@ let
             default = variantDefaults.roBinds;
             description = "Additional paths to bind read-only (merged with common roBinds)";
             example = [ "$HOME/.bashrc" ];
+          };
+
+          symlinks = lib.mkOption {
+            type = lib.types.attrsOf lib.types.str;
+            default = variantDefaults.symlinks;
+            description = "Symlinks to create in sandbox where keys are link paths and values are targets (merged with common symlinks)";
+            example = {
+              "/usr/bin/python" = "/nix/store/.../bin/python";
+            };
           };
 
           envs = lib.mkOption {
@@ -110,6 +120,7 @@ let
         name
         binds
         roBinds
+        symlinks
         envs
         extraArgs
         runCommand
@@ -148,6 +159,15 @@ in
         "$HOME/.bashrc"
         "$HOME/.zshrc"
       ];
+    };
+
+    symlinks = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = { };
+      description = "Common symlinks to create in all sandbox instances where keys are link paths and values are targets";
+      example = {
+        "/usr/bin/python" = "/nix/store/.../bin/python";
+      };
     };
 
     envs = lib.mkOption {

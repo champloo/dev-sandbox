@@ -12,6 +12,7 @@ It’s designed to keep your host data isolated while you (or AI coding assistan
   - `runCommand` — command to run inside the sandbox. Defaults to your current shell.
   - `binds` — list of paths to expose. Equivalent to  `bwrap --bind`. Can either be a string path where the same path is bound inside the sandbox or a two-element list [ src dst ].
   - `roBinds` — list of paths to expose as read only. Equivalent to  `bwrap --ro-bind`.
+  - `symlinks` — attrset of symlinks to create inside the sandbox. Keys are link paths, values are targets. Equivalent to `bwrap --symlink TARGET LINK`.
   - `envs` — key/value pairs. Equivalent to `brwap --setenv KEY VALUE`.
   - `extraArgs` — extra `bwrap` flags to append.
 - Sets DEV_SANDOX env var to allow you to detect when sandbox is active.
@@ -53,6 +54,10 @@ Then in your `configuration.nix`:
     roBinds = [
       "$HOME/.zshrc"
     ];
+    symlinks = {
+      # Example: ensure /usr/bin/python exists inside sandbox
+      "/usr/bin/python" = "/nix/store/.../bin/python";
+    };
     envs = {
       EDITOR = "nano";
     };

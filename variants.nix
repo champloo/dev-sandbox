@@ -7,6 +7,7 @@
     runCommand = [ ];
     binds = [ ];
     roBinds = [ ];
+    symlinks = { };
     envs = { };
     extraArgs = [ ];
     extraRuntimeInputs = [ ];
@@ -24,6 +25,7 @@
       "$HOME/.claude"
     ];
     roBinds = [ ];
+    symlinks = { };
     envs = { };
     extraArgs = [ ];
     extraRuntimeInputs = [ ];
@@ -43,6 +45,7 @@
       "$HOME/.codex"
     ];
     roBinds = [ ];
+    symlinks = { };
     envs = { };
     extraArgs = [ ];
     extraRuntimeInputs = [ ];

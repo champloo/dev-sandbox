@@ -5,6 +5,7 @@
   runCommand ? [ ],
   binds ? [ ],
   roBinds ? [ ],
+  symlinks ? { },
   extraArgs ? [ ],
   envs ? { },
   extraRuntimeInputs ? [ ],
@@ -114,6 +115,10 @@ let
         in
         ''maybe_bind "${b.src}" "${b.dst}"''
       ) binds
+    )}
+
+    ${pkgs.lib.concatStringsSep "\n" (
+      pkgs.lib.mapAttrsToList (link: target: ''args+=( --symlink "${target}" "${link}" )'') symlinks
     )}
 
     ${pkgs.lib.concatStringsSep "\n" (map (a: ''args+=( ${a} )'') extraArgs)}
