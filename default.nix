@@ -127,6 +127,12 @@ let
       pkgs.lib.mapAttrsToList (n: v: ''args+=( --setenv "${n}" "${v}" )'') envs
     )}
 
+    # Allow additional bwrap args via environment variable
+    if [[ -n "''${BWRAP_EXTRA:-}" ]]; then
+      read -ra extra_args <<< "$BWRAP_EXTRA"
+      args+=("''${extra_args[@]}")
+    fi
+
     RUN_CMD=(${pkgs.lib.concatStringsSep " " (map pkgs.lib.escapeShellArg runCommand)})
     if [[ ''${#RUN_CMD[@]} -eq 0 ]]; then
       RUN_CMD=("$SHELL_RESOLVED")
