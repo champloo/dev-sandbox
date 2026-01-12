@@ -41,6 +41,11 @@ let
 
     mkdir -p "$SANDBOX_TMP" "$SANDBOX_HOME" "$SANDBOX_HOME/.cache" "$SANDBOX_HOME/.config"
 
+    # If project has .devenv, create a sandbox-specific .devenv-sb to avoid conflicts
+    if [[ -d "$PWD/.devenv" ]]; then
+      mkdir -p "$PWD/.devenv-sb"
+    fi
+
     maybe_bind() {
       if [[ -e "$1" ]]; then
         args+=( --bind "$1" "''${2:-$1}" )
@@ -96,6 +101,11 @@ let
     maybe_bind /etc/nix
     maybe_bind /etc/static/nix
     maybe_ro_bind /run/current-system/sw
+
+    # Bind sandbox-specific .devenv-sb over .devenv to avoid conflicts
+    if [[ -d "$PWD/.devenv" ]]; then
+      args+=( --bind "$PWD/.devenv-sb" "$PWD/.devenv" )
+    fi
 
     ${pkgs.lib.concatStringsSep "\n" (
       map (
