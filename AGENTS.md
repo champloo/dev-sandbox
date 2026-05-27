@@ -96,7 +96,7 @@ nix eval .#nixosModules.default
 - Network (needed for API calls)
 
 **Default Mounts**:
-- R/W: Current directory, synthetic `/home/$USER`, synthetic `/tmp`
+- R/W: Current directory, synthetic `/home/$USER`, synthetic `/tmp`, `/run/user/$UID` (tmpfs, 0700)
 - R/O: `/nix`, `/bin/sh`, `/usr/bin/env`, `/run/current-system/sw` (NixOS)
 - Special: `/etc/resolv.conf` for DNS
 
@@ -105,6 +105,7 @@ nix eval .#nixosModules.default
 - `DEV_SANDBOX=enabled` - Detection flag
 - SSL cert variables point to `cacert` bundle
 - `PATH`, `HOME`, `USER`, `LOGNAME`, `TERM` inherited/set
+- `XDG_RUNTIME_DIR=/run/user/$UID` - points at a writable in-sandbox tmpfs (for daemon sockets)
 
 ## Testing Approach
 

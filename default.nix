@@ -33,6 +33,7 @@ let
     SHELL_RESOLVED="$(readlink "$(command -v "$SHELL")")"
 
     USER="$(whoami)"
+    RUNTIME_UID="$(id -u)"
     SANDBOX_HOME="/tmp/dev-sandbox-home-$$"
     SANDBOX_TMP="/tmp/dev-sandbox-tmp-$$"
 
@@ -88,8 +89,10 @@ let
       --setenv "USER" "$USER"
       --setenv "LOGNAME" "$LOGNAME"
       --setenv "TERM" "$TERM"
+      --setenv "XDG_RUNTIME_DIR" "/run/user/$RUNTIME_UID"
       --bind "$SANDBOX_HOME" "/home/$USER"
       --bind "$SANDBOX_TMP" /tmp
+      --perms 0700 --tmpfs "/run/user/$RUNTIME_UID"   # writable XDG_RUNTIME_DIR for app daemon sockets
       --bind "$PWD" "$PWD"
       --bind /etc/resolv.conf /etc/resolv.conf
       --ro-bind /bin/sh /bin/sh
