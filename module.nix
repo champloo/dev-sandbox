@@ -27,7 +27,7 @@ let
   mkInstanceOptions =
     variantDefaults:
     lib.mkOption {
-      default = {};
+      default = { };
       type = lib.types.submodule {
         options = {
           enable = lib.mkEnableOption "this dev-sandbox instance";
@@ -116,6 +116,9 @@ let
       mergedConfig = mergeInstanceConfig instanceCfg;
     in
     pkgs.callPackage ./default.nix {
+      # Use the host's real CA bundle so roots from `security.pki.certificateFiles`
+      # (e.g. a TLS-intercepting corporate proxy) are trusted inside the sandbox.
+      caBundle = config.security.pki.caBundle;
       inherit (mergedConfig)
         name
         binds

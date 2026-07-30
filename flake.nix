@@ -40,19 +40,25 @@
             extraArgs ? [ ],
             envs ? { },
             extraRuntimeInputs ? [ ],
+            # null means "keep default.nix's default" (vanilla upstream bundle).
+            # NixOS users get the host bundle automatically via the module.
+            caBundle ? null,
           }:
-          pkgs.callPackage ./default.nix {
-            inherit
-              name
-              runCommand
-              binds
-              roBinds
-              symlinks
-              extraArgs
-              envs
-              extraRuntimeInputs
-              ;
-          }
+          pkgs.callPackage ./default.nix (
+            {
+              inherit
+                name
+                runCommand
+                binds
+                roBinds
+                symlinks
+                extraArgs
+                envs
+                extraRuntimeInputs
+                ;
+            }
+            // lib.optionalAttrs (caBundle != null) { inherit caBundle; }
+          )
         );
 
         # Create packages using variant defaults

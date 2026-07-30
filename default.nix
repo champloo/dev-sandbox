@@ -9,6 +9,11 @@
   extraArgs ? [ ],
   envs ? { },
   extraRuntimeInputs ? [ ],
+  # Full path to the CA bundle file to trust inside the sandbox.
+  # On NixOS, pass `config.security.pki.caBundle` so that roots added via
+  # `security.pki.certificateFiles` (corporate TLS-intercepting proxies, etc.)
+  # are visible in the sandbox. Defaults to the vanilla upstream Mozilla bundle.
+  caBundle ? "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt",
 }:
 
 let
@@ -28,7 +33,7 @@ let
 
   script = ''
     BWRAP="${pkgs.bubblewrap}/bin/bwrap"
-    CACERT="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+    CACERT="${caBundle}"
 
     SHELL_RESOLVED="$(readlink "$(command -v "$SHELL")")"
 
